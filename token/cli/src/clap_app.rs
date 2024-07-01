@@ -742,7 +742,7 @@ pub fn app<'a, 'b>(
                         .alias("enable-nontransferable")
                         .takes_value(false)
                         .help(
-                            "Permanently force tokens to be non-transferable. Thay may still be burned."
+                            "Permanently force tokens to be non-transferable. They may still be burned."
                         ),
                 )
                 .arg(
@@ -2296,7 +2296,7 @@ pub fn app<'a, 'b>(
         )
         .subcommand(
             SubCommand::with_name(CommandName::UpdateConfidentialTransferSettings.into())
-                .about("Update confidential transfer configuation for a token")
+                .about("Update confidential transfer configuration for a token")
                 .arg(
                     Arg::with_name("token")
                         .validator(is_valid_pubkey)

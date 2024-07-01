@@ -2492,7 +2492,7 @@ async fn transfer_fee(test_validator: &TestValidator, payer: &Keypair) {
     let extension = mint_state.get_extension::<TransferFeeConfig>().unwrap();
 
     assert_eq!(
-        Option::<Pubkey>::try_from(extension.transfer_fee_config_authority).unwrap(),
+        Option::<Pubkey>::from(extension.transfer_fee_config_authority),
         None,
     );
 
@@ -2516,7 +2516,7 @@ async fn transfer_fee(test_validator: &TestValidator, payer: &Keypair) {
     let extension = mint_state.get_extension::<TransferFeeConfig>().unwrap();
 
     assert_eq!(
-        Option::<Pubkey>::try_from(extension.withdraw_withheld_authority).unwrap(),
+        Option::<Pubkey>::from(extension.withdraw_withheld_authority),
         None,
     );
 }
@@ -2667,7 +2667,7 @@ async fn confidential_transfer(test_validator: &TestValidator, payer: &Keypair) 
         .unwrap();
     assert!(bool::from(extension.allow_confidential_credits));
 
-    // disable and eanble non-confidential transfers for an account
+    // disable and enable non-confidential transfers for an account
     process_test_command(
         &config,
         payer,
@@ -4100,7 +4100,7 @@ async fn compute_budget(test_validator: &TestValidator, payer: &Keypair) {
     for program_id in VALID_TOKEN_PROGRAM_IDS.iter() {
         let mut config = test_config_with_default_signer(test_validator, payer, program_id);
         config.compute_unit_price = Some(42);
-        config.compute_unit_limit = ComputeUnitLimit::Static(30_000);
+        config.compute_unit_limit = ComputeUnitLimit::Static(40_000);
         run_transfer_test(&config, payer).await;
     }
 }

@@ -12,7 +12,8 @@ use {
     futures::try_join,
     serde::Serialize,
     solana_account_decoder::{
-        parse_token::{get_token_account_mint, parse_token, TokenAccountType, UiAccountState},
+        parse_account_data::SplTokenAdditionalData,
+        parse_token::{get_token_account_mint, parse_token_v2, TokenAccountType, UiAccountState},
         UiAccountData,
     },
     solana_clap_utils::{
@@ -1254,7 +1255,7 @@ async fn command_transfer(
         token.get_associated_token_address(&sender_owner)
     };
 
-    // the amount the user wants to tranfer, as a f64
+    // the amount the user wants to transfer, as a f64
     let maybe_transfer_balance =
         ui_amount.map(|ui_amount| spl_token::ui_amount_to_amount(ui_amount, mint_info.decimals));
 
@@ -1307,7 +1308,7 @@ async fn command_transfer(
         // * its a system account, we are happy
         // * its a non-account for this program, we error helpfully
         // * its a token account for a different program, we error helpfully
-        // * otherwise its probabaly a program account owner of an ata, in which case we
+        // * otherwise its probably a program account owner of an ata, in which case we
         //   gate transfer with a flag
         if let Some(recipient_account_data) = maybe_recipient_account_data {
             let recipient_account_owner = recipient_account_data.owner;
@@ -2278,7 +2279,7 @@ async fn command_address(
 async fn command_display(config: &Config<'_>, address: Pubkey) -> CommandResult {
     let account_data = config.get_account_checked(&address).await?;
 
-    let (decimals, has_permanent_delegate) =
+    let (additional_data, has_permanent_delegate) =
         if let Some(mint_address) = get_token_account_mint(&account_data.data) {
             let mint_account = config.get_account_checked(&mint_address).await?;
             let mint_state = StateWithExtensionsOwned::<Mint>::unpack(mint_account.data)
@@ -2290,13 +2291,14 @@ async fn command_display(config: &Config<'_>, address: Pubkey) -> CommandResult 
                 } else {
                     false
                 };
+            let additional_data = SplTokenAdditionalData::with_decimals(mint_state.base.decimals);
 
-            (Some(mint_state.base.decimals), has_permanent_delegate)
+            (Some(additional_data), has_permanent_delegate)
         } else {
             (None, false)
         };
 
-    let token_data = parse_token(&account_data.data, decimals);
+    let token_data = parse_token_v2(&account_data.data, additional_data.as_ref());
 
     match token_data {
         Ok(TokenAccountType::Account(account)) => {
